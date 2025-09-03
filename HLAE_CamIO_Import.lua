@@ -1,4 +1,4 @@
-local version = '1.0.1'
+local version = '1.1.0'
 local max_camio_version = 2;
 local min_camio_version = 2;
 local DEBUG = false
@@ -228,7 +228,12 @@ function win.On.FileSelect.Clicked()
 		return
 	end
 
-	local end_frame = fu_comp:GetAttrs("COMPN_GlobalEnd")
+	local global_start_frame = fu_comp:GetAttrs("COMPN_GlobalStart")
+	local global_end_frame = fu_comp:GetAttrs("COMPN_GlobalEnd")
+	local render_start_frame = fu_comp:GetAttrs("COMPN_RenderStart")
+
+	local offset = math.abs(global_start_frame - render_start_frame) 
+	local end_frame = global_end_frame + offset
 
 	bmd.wait(0.1)
 	fu_comp.CurrentTime = 0
@@ -284,30 +289,32 @@ function win.On.FileSelect.Clicked()
 	local fov = {}
 
 	console_debug("frames loop start")
+	local current_frame = global_start_frame
 	for i = 0, end_frame do
-		-- Davinci Z = -forward, X = right, Y = up // The Visual Effects Guide to DaVinci Resolve 18 (Navigating in 3D)
-		-- HLAE is quake coordinates where X = forward, Y = left, Z = up
+		local t = current_frame
 		local frame = data[i]
-		if frame == nil then
-			goto skip
-		end
-		local t = i
-		local x = frame[1]
-		local y = frame[2]
-		local z = frame[3]
-		local rx = frame[4]
-		local ry = frame[5]
-		local rz = frame[6]
-		local f = frame[7]
 
-		position.x[t] = { -y, LH = { 0.0, 0.0 }, RH = { 0.0, 0.0 } }
-		position.y[t] = { z, LH = { 0.0, 0.0 }, RH = { 0.0, 0.0 } }
-		position.z[t] = { -x, LH = { 0.0, 0.0 }, RH = { 0.0, 0.0 } }
-		rotation.x[t] = { -ry, LH = { 0.0, 0.0 }, RH = { 0.0, 0.0 } }
-		rotation.y[t] = { rz, LH = { 0.0, 0.0 }, RH = { 0.0, 0.0 } }
-		rotation.z[t] = { -rx, LH = { 0.0, 0.0 }, RH = { 0.0, 0.0 } }
-		fov[t] = { f, LH = { 0.0, 0.0 }, RH = { 0.0, 0.0 } }
-		::skip::
+		if frame ~= nil then
+			-- Davinci Z = -forward, X = right, Y = up // The Visual Effects Guide to DaVinci Resolve 18 (Navigating in 3D)
+			-- HLAE is quake coordinates where X = forward, Y = left, Z = up
+			local x = frame[1]
+			local y = frame[2]
+			local z = frame[3]
+			local rx = frame[4]
+			local ry = frame[5]
+			local rz = frame[6]
+			local f = frame[7]
+
+			position.x[t] = { -y, LH = { 0.0, 0.0 }, RH = { 0.0, 0.0 } }
+			position.y[t] = { z, LH = { 0.0, 0.0 }, RH = { 0.0, 0.0 } }
+			position.z[t] = { -x, LH = { 0.0, 0.0 }, RH = { 0.0, 0.0 } }
+			rotation.x[t] = { -ry, LH = { 0.0, 0.0 }, RH = { 0.0, 0.0 } }
+			rotation.y[t] = { rz, LH = { 0.0, 0.0 }, RH = { 0.0, 0.0 } }
+			rotation.z[t] = { -rx, LH = { 0.0, 0.0 }, RH = { 0.0, 0.0 } }
+			fov[t] = { f, LH = { 0.0, 0.0 }, RH = { 0.0, 0.0 } }
+		end
+
+		current_frame = current_frame + 1
 	end
 	console_debug("frames loop end")
 
