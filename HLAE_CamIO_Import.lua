@@ -1,4 +1,4 @@
-local version = '1.0.0'
+local version = '1.0.1'
 local max_camio_version = 2;
 local min_camio_version = 2;
 local DEBUG = false
@@ -268,6 +268,13 @@ function win.On.FileSelect.Clicked()
 	camera3d.Transform3DOp.Rotate.Y = fu_comp.BezierSpline()
 	camera3d.Transform3DOp.Rotate.Z = fu_comp.BezierSpline()
 	camera3d.Transform3DOp.Rotate.RotOrder = "ZXY"
+
+	local comp_w = comp:GetPrefs("Comp.FrameFormat.Width")
+	local comp_h = comp:GetPrefs("Comp.FrameFormat.Height")
+	local comp_ratio = comp_w / comp_h
+
+	local aperture_w = camera3d:GetInput("ApertureW")
+	camera3d.ApertureH = aperture_w / comp_ratio
 
 	camera3d.AovType = 1
 	camera3d.AoV = fu_comp.BezierSpline()
